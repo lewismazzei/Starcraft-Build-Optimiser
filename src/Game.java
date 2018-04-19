@@ -12,6 +12,7 @@ public class Game {
     private int gasGeysers;
     private HashMap<Constructable, Integer> units;
     private HashMap<Constructable, Integer> buildings;
+    private HashMap<ProbeTask, Integer> probes;
     private Game parent;
 
     private final int GOAL_1 = 1;
@@ -28,6 +29,7 @@ public class Game {
         this.gasGeysers = 6;
         this.units = initialUnits();
         this.buildings = initialBuildings();
+        this.probes = initialProbes();
     }
 
     public Game(int time, int minerals, int gas, HashMap<Constructable, Integer> buildings, HashMap<Constructable, Integer> units) {
@@ -48,6 +50,12 @@ public class Game {
         HashMap<Constructable, Integer> buildings = new HashMap<>();
         buildings.put(Constructable.NEXUS, 1);
         return buildings;
+    }
+
+    private HashMap<ProbeTask, Integer> initialProbes() {
+         HashMap<ProbeTask, Integer> probes = new HashMap<>();
+         probes.put(ProbeTask.MINERAL_MINING, 6);
+         return probes;
     }
 
     public ArrayList<Game> nextLayer(int goal) {
@@ -92,14 +100,14 @@ public class Game {
             e.printStackTrace();
         }
         nextGame.parent = game;
-        if (mineralPatches > 0) {
-            nextGame.useProbe();
-            if (mineralPatches > 8) {
-                nextGame.minerals += 0.68;
+        if (mineralPatches > 0) { //todo mine until we have the correct number of resources to accomplish the complete goal.
+            int mining = probes.getOrDefault(ProbeTask.MINERAL_MINING, 0);
+            nextGame.useProbe(); //todo replace this with a multiplication method
+            if (mining <= 16) {
+                nextGame.minerals += mining * 0.68;
             } else {
-                nextGame.minerals += 0.33;
+                nextGame.minerals += (16 * 0.68) + (0.33 * (mining - 16));
             }
-            nextGame.mineralPatches -= 1;
         } else {
             return null;
         }
@@ -109,9 +117,8 @@ public class Game {
     private Game gatherGas(Game game) {
         switch (game.buildings.getOrDefault(Constructable.ASSIMILATOR, 0)) {
             case 0:
-                this.buildConstructable(Constructable.ASSIMILATOR);
-                break;
             case 1:
+                this.buildConstructable(Constructable.ASSIMILATOR); //todo should we always build 2?
                 break;
             case 2:
                 break;
@@ -133,7 +140,6 @@ public class Game {
 
     private void buildUnit(Constructable c) {
         units.put(c, units.getOrDefault(c, 0) + 1);
-
     }
 
     public int getMinerals() {

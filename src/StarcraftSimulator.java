@@ -16,7 +16,7 @@ public class StarcraftSimulator {
         currlayer.add(root);
 
         for (int goal = 1; goal < 6; goal++) {
-            boolean goalReached = false
+            boolean goalReached = false;
             while (!goalReached) {
 
 

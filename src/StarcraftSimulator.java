@@ -3,6 +3,7 @@ import java.util.Arrays;
 import java.util.HashMap;
 
 public class StarcraftSimulator {
+
     public static void main(String[] args) {
         Constructable construct = Constructable.DARK_SHRINE;
         Arrays.stream(construct.getDependencies()).forEach(System.out::println);
@@ -15,10 +16,16 @@ public class StarcraftSimulator {
         currlayer.add(root);
 
         for (int goal = 1; goal < 6; goal++) {
-            for (Game game : currlayer) {
-                if (game != null) {
-                    nextlayer = game.nextLayer(goal);
-                }
+            boolean goalReached = false
+            while (!goalReached) {
+
+
+
+
+
+
+
+
             }
         }
 

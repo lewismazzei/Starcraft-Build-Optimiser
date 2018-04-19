@@ -102,7 +102,6 @@ public class Game {
         nextGame.parent = game;
         if (mineralPatches > 0) { //todo mine until we have the correct number of resources to accomplish the complete goal.
             int mining = probes.getOrDefault(ProbeTask.MINERAL_MINING, 0);
-            nextGame.useProbe(); //todo replace this with a multiplication method
             if (mining <= 16) {
                 nextGame.minerals += mining * 0.68;
             } else {
@@ -132,10 +131,6 @@ public class Game {
     private void buildConstructable(Constructable c) {
         Game nextGame = new Game();
 
-    }
-
-    private void useProbe() {
-        this.units.put(Constructable.PROBE, this.units.get(Constructable.PROBE) - 1);
     }
 
     private void buildUnit(Constructable c) {

@@ -79,7 +79,11 @@ public enum Constructable {
     public boolean canAndShouldBeBuilt(State state, Goal goal) {
         if (dependenciesExist(state) && resourcesAvailable(state)) {
             if (isUnit()) {
-                if (!state.getActiveBuildings().contains(this.builtFrom) && ) {
+                if (!state.getActiveBuildings().contains(this.builtFrom) && /*UNIT IS STILL REQUIRED TO BE BUILT*/) {
+                }
+            } else {
+                if (/*BUILDING IS STILL NEEDED TO BE BUILT*/) {
+
                 }
             }
         }

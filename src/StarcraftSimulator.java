@@ -1,4 +1,5 @@
 import java.util.ArrayList;
+import java.util.HashMap;
 
 public class StarcraftSimulator {
 
@@ -8,16 +9,24 @@ public class StarcraftSimulator {
         ArrayList<State> currentStates = new ArrayList<>();
         ArrayList<State> possibleNextStates = new ArrayList<>();
 
+        ArrayList<Goal> goals = new ArrayList<>();
+
+        for (int i = 0; i < 5; i++) {
+            goals.add(new Goal(Goal.unitsRequired(i)));
+        }
+
         currentStates.add(root);
 
-        for ()
+        for (Goal goal : goals) {
+            for (State state : currentStates) {
+                if (!state.getConstructs().entrySet().containsAll(goal.getUnitsRequired().entrySet())) {
+                    for (Constructable construct : Constructable.values()) {
+                        if (construct.dependenciesExist(state) && construct.resourcesAvailable(state)) {
 
-
-
-
-
-
-
-
+                        }
+                    }
+                }
             }
         }
+     }
+}

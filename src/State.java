@@ -14,11 +14,6 @@ public class State {
     private HashMap<Constructable, Integer> constructs;
     private State parent;
 
-    private final int GOAL_1 = 1;
-    private final int GOAL_2 = 2;
-    private final int GOAL_3 = 3;
-    private final int GOAL_4 = 4;
-    private final int GOAL_5 = 5;
 
     public State() {
         this.time = 0;
@@ -133,5 +128,9 @@ public class State {
 
     public HashMap<Constructable, Integer> getUnits() {
         return units;
+    }
+
+    public HashMap<Constructable, Integer> getConstructs() {
+        return constructs;
     }
 }

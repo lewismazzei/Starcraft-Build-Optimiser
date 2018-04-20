@@ -1,18 +1,16 @@
-import org.omg.CORBA.UNKNOWN;
-
 import java.util.*;
 
 public class Goal {
     private HashMap<Constructable, Integer> unitsRequired = new HashMap<>();
     private HashSet<Constructable> buildingsRequired = new HashSet<>();
-    private int mineralsRequired;
-    private int gasRequired;
+    //private int mineralsRequired;
+    //private int gasRequired;
 
     public Goal(HashMap<Constructable, Integer> unitsRequired) {
         this.unitsRequired = unitsRequired;
         this.buildingsRequired = buildingsRequired();
-        this.mineralsRequired = calcMineralsRequired(unitsRequired);
-        this.gasRequired = calcGasRequired(unitsRequired);
+        //this.mineralsRequired = calcMineralsRequired(unitsRequired);
+        //this.gasRequired = calcGasRequired(unitsRequired);
     }
 
     //private int calcMineralsRequired() {

@@ -1,5 +1,3 @@
-import com.sun.tools.internal.jxc.ap.Const;
-
 import java.util.Map;
 import java.util.Optional;
 
@@ -44,14 +42,10 @@ public enum Constructable {
         this.builtFrom = builtFrom;
     }
 
-    public Constructable[] getDependencies() {
-        return dependencies;
-    }
-
-    public boolean dependenciesExist(Game game) {
+    public boolean dependenciesExist(State state) {
         int matching = 0;
         for (Constructable c : dependencies) {
-            for (Map.Entry<Constructable, Integer> b : game.getBuildings().entrySet()) {
+            for (Map.Entry<Constructable, Integer> b : state.getBuildings().entrySet()) {
                 if (b.getKey() == c) {
                     matching++;
                 }
@@ -60,8 +54,23 @@ public enum Constructable {
         return matching == dependencies.length;
     }
 
-    public boolean resourcesAvailable(Game game) {
-        return game.getMinerals() > mineralCost && game.getGas() > gasCost;
+    public boolean resourcesAvailable(State state) {
+        return state.getCurrentMinerals() > mineralCost && state.getCurrentGas() > gasCost;
     }
 
+    public boolean isUnit() {
+        return this.builtFrom.isPresent();
+    }
+
+    public Constructable[] getDependencies() {
+        return dependencies;
+    }
+
+    public int getMineralCost() {
+        return mineralCost;
+    }
+
+    public int getGasCost() {
+        return gasCost;
+    }
 }

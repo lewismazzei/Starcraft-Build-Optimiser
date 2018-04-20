@@ -80,6 +80,10 @@ public enum Constructable {
         return buildTime;
     }
 
+    public Optional<Constructable> getBuiltFrom() {
+        return builtFrom;
+    }
+
     public boolean canAndShouldBeBuilt(State state, Goal goal) {
         if (dependenciesExist(state) && resourcesAvailable(state)) {
             if (isUnit()) {

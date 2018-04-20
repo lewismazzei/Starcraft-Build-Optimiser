@@ -27,6 +27,15 @@ public class State {
         this.probes = initialProbes();
     }
 
+    public State(State state) {
+        this.parent = state;
+        this.gatherMinerals();
+        this.gatherGas();
+
+        //todo add goal detection
+        new State(this);
+    }
+
     //public State(int time, int minerals, int gas, HashMap<Constructable, Integer> constructs) {
     //    this.time = time;
     //    this.minerals = minerals;
@@ -67,7 +76,7 @@ public class State {
                 //possibleNextStates.addAll(buildConstruct(NEXT CONSTRUCT TO BE BUILT));
                 //ELSE
                 for (Constructable construct : Constructable.values()) {
-                    State possibleNextState = (State) this.clone();
+                    State possibleNextState = new State(this);
                     if (construct.canAndShouldBeBuilt(this, goal)) {
                         possibleNextState = buildConstruct(construct);
                     }
@@ -84,41 +93,35 @@ public class State {
         return possibleNextStates;
     }
 
-    public State gatherMinerals() throws CloneNotSupportedException {
-        State nextState = (State) this.clone();
-        nextState.parent = this;
+    public void gatherMinerals() {
         if (mineralSlots > 0) {
             int mining = probes.getOrDefault(ProbeTask.MINERAL_MINING, 0);
             if (mining <= 16) {
-                nextState.minerals += mining * 0.68;
+                minerals += mining * 0.68;
             } else {
-                nextState.minerals += (16 * 0.68) + (0.33 * (mining - 16));
+                minerals += (16 * 0.68) + (0.33 * (mining - 16));
             }
-        } else {
-            return null;
         }
-        return nextState;
     }
 
-    public State gatherGas() throws CloneNotSupportedException {
-        State nextState = (State) this.clone();
-        nextState.parent = this;
-        nextState.useProbe();
-        nextState.gas += 0.63;
-
-        return nextState;
+    public void gatherGas() {
+        parent = this;
+        useProbe();
+        gas += 0.63;
     }
 
-    public State buildConstruct(Constructable construct) throws CloneNotSupportedException {
-        State nextState = (State) this.clone();
-        nextState.parent = this;
+    public void buildConstruct(Constructable construct) {
+        BuildTask bt = new BuildTask(construct);
+        if (bt.getConstructable().getBuiltFrom().isPresent()) {
+            activeBuildings.add(bt.getConstructable());
+        }
+        buildQueue.add(bt);
         if (construct.isUnit()) {
-            nextState.activeBuildings.add(construct);
-            nextState.constructs.put(construct, constructs.getOrDefault(construct, 0) - 1);
+            activeBuildings.add(construct);
+            constructs.put(construct, constructs.getOrDefault(construct, 0) - 1);
         }
         //TODO start timer, only put into map once timer has finished
         //nextState.constructs.put(c, constructs.getOrDefault(c, 0) + 1);
-        return nextState;
     }
 
     private void tickQueue() {
@@ -126,18 +129,21 @@ public class State {
             BuildTask bt = buildQueue.get(i);
             int ticksLeft = bt.tick();
             if (ticksLeft == 0) {
+                if (bt.getConstructable().getBuiltFrom().isPresent()) {
+                    activeBuildings.remove(bt.getConstructable());
+                }
                 constructs.put(bt.getConstructable(), constructs.getOrDefault(bt.getConstructable(), 0) + 1); //todo not sure if this should be construct or child
                 buildQueue.remove(i);
             }
         }
     }
 
-    private void useProbe() {
-        this.units.put(Constructable.PROBE, this.units.get(Constructable.PROBE) - 1);
-    }
+    //private void useProbe() {
+    //    this.units.put(Constructable.PROBE, this.units.get(Constructable.PROBE) - 1);
+    //}
 
     private void buildUnit(Constructable c) {
-        buildQueue.add(new BuildTask(c));
+
     }
 
     public int getMinerals() {

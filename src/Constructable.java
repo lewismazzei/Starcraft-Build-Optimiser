@@ -1,3 +1,5 @@
+import com.sun.source.tree.IfTree;
+
 import java.util.Map;
 import java.util.Optional;
 
@@ -72,5 +74,14 @@ public enum Constructable {
 
     public int getGasCost() {
         return gasCost;
+    }
+
+    public boolean canAndShouldBeBuilt(State state, Goal goal) {
+        if (dependenciesExist(state) && resourcesAvailable(state)) {
+            if (isUnit()) {
+                if (!state.getActiveBuildings().contains(this.builtFrom) && ) {
+                }
+            }
+        }
     }
 }

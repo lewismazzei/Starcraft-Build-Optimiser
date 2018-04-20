@@ -13,6 +13,7 @@ public class State {
     //private HashMap<Constructable, Integer> buildings;
     private HashMap<Constructable, Integer> constructs;
     private HashMap<ProbeTask, Integer> probes;
+    private ArrayList<Constructable> activeBuildings;
     private State parent;
 
     public State() {
@@ -65,9 +66,12 @@ public class State {
                 //possibleNextStates.addAll(buildConstruct(NEXT CONSTRUCT TO BE BUILT));
                 //ELSE
                 for (Constructable construct : Constructable.values()) {
-                    if (construct.dependenciesExist(this) && construct.resourcesAvailable(this)) {
-                        buildConstruct(construct);
+                    State possibleNextState = (State) this.clone();
+                    if (construct.canAndShouldBeBuilt(this, goal)) {
+                        possibleNextState = buildConstruct(construct);
                     }
+                    possibleNextState = possibleNextState.gatherMinerals();
+                    possibleNextStates.add(possibleNextState);
                 }
 
 
@@ -79,10 +83,10 @@ public class State {
         return possibleNextStates;
     }
 
-    public State gatherMinerals(State State) throws CloneNotSupportedException {
-        State nextState = (State) State.clone();
-        nextState.parent = State;
-        if (mineralSlots > 0) { //todo mine until we have the correct number of resources to accomplish the complete goal.
+    public State gatherMinerals() throws CloneNotSupportedException {
+        State nextState = (State) this.clone();
+        nextState.parent = this;
+        if (mineralSlots > 0) {
             int mining = probes.getOrDefault(ProbeTask.MINERAL_MINING, 0);
             if (mining <= 16) {
                 nextState.minerals += mining * 0.68;
@@ -104,12 +108,16 @@ public class State {
         return nextState;
     }
 
-    public void buildConstruct(Constructable c) throws CloneNotSupportedException {
+    public State buildConstruct(Constructable construct) throws CloneNotSupportedException {
         State nextState = (State) this.clone();
-        nextState.constructs.put(c, constructs.getOrDefault(c, 0) + 1);
-        if (c.isUnit()) {
-
+        nextState.parent = this;
+        if (construct.isUnit()) {
+            nextState.activeBuildings.add(construct);
+            nextState.constructs.put(construct, constructs.getOrDefault(construct, 0) - 1);
         }
+        //TODO start timer, only put into map once timer has finished
+        //nextState.constructs.put(c, constructs.getOrDefault(c, 0) + 1);
+        return nextState;
     }
 
     private void useProbe() {
@@ -139,5 +147,9 @@ public class State {
 
     public HashMap<Constructable, Integer> getConstructs() {
         return constructs;
+    }
+
+    public ArrayList<Constructable> getActiveBuildings() {
+        return activeBuildings;
     }
 }

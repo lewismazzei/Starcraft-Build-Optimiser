@@ -76,6 +76,10 @@ public enum Constructable {
         return gasCost;
     }
 
+    public int getBuildTime() {
+        return buildTime;
+    }
+
     public boolean canAndShouldBeBuilt(State state, Goal goal) {
         if (dependenciesExist(state) && resourcesAvailable(state)) {
             if (isUnit()) {

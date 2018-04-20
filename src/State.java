@@ -14,6 +14,7 @@ public class State {
     private HashMap<Constructable, Integer> constructs;
     private HashMap<ProbeTask, Integer> probes;
     private ArrayList<Constructable> activeBuildings;
+    private ArrayList<BuildTask> buildQueue = new ArrayList<>();
     private State parent;
 
     public State() {
@@ -120,13 +121,23 @@ public class State {
         return nextState;
     }
 
+    private void tickQueue() {
+        for (int i=0; i<buildQueue.size(); i++) {
+            BuildTask bt = buildQueue.get(i);
+            int ticksLeft = bt.tick();
+            if (ticksLeft == 0) {
+                constructs.put(bt.getConstructable(), constructs.getOrDefault(bt.getConstructable(), 0) + 1); //todo not sure if this should be construct or child
+                buildQueue.remove(i);
+            }
+        }
+    }
+
     private void useProbe() {
         this.units.put(Constructable.PROBE, this.units.get(Constructable.PROBE) - 1);
     }
 
     private void buildUnit(Constructable c) {
-        units.put(c, units.getOrDefault(c, 0) + 1);
-
+        buildQueue.add(new BuildTask(c));
     }
 
     public int getMinerals() {

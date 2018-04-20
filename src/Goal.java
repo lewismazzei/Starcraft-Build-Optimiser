@@ -84,11 +84,11 @@ public class Goal {
         return unitsRequired;
     }
 
-    public int getMineralsRequired() {
-        return mineralsRequired;
-    }
-
-    public int getGasRequired() {
-        return gasRequired;
-    }
+    //public int getMineralsRequired() {
+    //    return mineralsRequired;
+    //}
+    //
+    //public int getGasRequired() {
+    //    return gasRequired;
+    //}
 }

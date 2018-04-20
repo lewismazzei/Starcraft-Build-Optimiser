@@ -3,33 +3,34 @@ import java.util.HashMap;
 
 public class State {
     private int time;
-    private int currentMinerals;
-    private int currentGas;
-    private int accumulatedMinerals;
-    private int accumulatedGas;
-    private int mineralPatches;
-    private int gasGeysers;
+    private int minerals;
+    private int gas;
+    //private int accumulatedMinerals;
+    //private int accumulatedGas;
+    private int mineralSlots;
+    private int gasSlots;
     //private HashMap<Constructable, Integer> units;
     //private HashMap<Constructable, Integer> buildings;
     private HashMap<Constructable, Integer> constructs;
+    private HashMap<ProbeTask, Integer> probes;
     private State parent;
-
 
     public State() {
         this.time = 0;
-        this.currentMinerals = 50;
-        this.currentGas = 0;
-        this.mineralPatches = 24;
-        this.gasGeysers = 6;
+        this.minerals = 50;
+        this.gas = 0;
+        this.mineralSlots = 24;
+        this.gasSlots = 6;
         this.constructs = initialConstructs();
+        this.probes = initialProbes();
     }
 
-    public State(int time, int currentMinerals, int currentGas, HashMap<Constructable, Integer> constructs) {
-        this.time = time;
-        this.currentMinerals = currentMinerals;
-        this.currentGas = currentGas;
-        this.constructs = constructs;
-    }
+    //public State(int time, int minerals, int gas, HashMap<Constructable, Integer> constructs) {
+    //    this.time = time;
+    //    this.minerals = minerals;
+    //    this.gas = gas;
+    //    this.constructs = constructs;
+    //}
 
     //private HashMap<Constructable, Integer> initialUnits() {
     //    HashMap<Constructable, Integer> units = new HashMap<>();
@@ -50,18 +51,24 @@ public class State {
         return constructs;
     }
 
-    public ArrayList<State> getPossibleActions(int goal) {
-        ArrayList<State> nextActions = new ArrayList<>();
+    private HashMap<ProbeTask, Integer> initialProbes() {
+        HashMap<ProbeTask, Integer> probes = new HashMap<>();
+        probes.put(ProbeTask.MINERAL_MINING, 6);
+        return probes;
+    }
 
-        //if (units.get(Constructable.PROBE) == 0) {
-        //    getPossibleActions.addAll(buildUnits());
-        //} else {
+    public ArrayList<State> possibleNextStates(Goal goal) {
+        ArrayList<State> possibleNextStates = new ArrayList<>();
+
             try {
                 //IF next construct in stack can be built
-                //nextActions.addAll(buildConstruct(NEXT CONSTRUCT TO BE BUILT));
+                //possibleNextStates.addAll(buildConstruct(NEXT CONSTRUCT TO BE BUILT));
                 //ELSE
-                nextActions.add(gatherMinerals());
-                nextActions.add(gatherGas());
+                for (Constructable construct : Constructable.values()) {
+                    if (construct.dependenciesExist(this) && construct.resourcesAvailable(this)) {
+                        buildConstruct(construct);
+                    }
+                }
 
 
             } catch (CloneNotSupportedException e) {
@@ -69,40 +76,40 @@ public class State {
             }
 
         //}
-        return nextActions;
+        return possibleNextStates;
     }
 
-    private State gatherMinerals() throws CloneNotSupportedException {
-        State nextState = (State) this.clone();
-        nextState.parent = this;
-        if (mineralPatches > 0) {
-            nextState.useProbe();
-            if (mineralPatches > 8) {
-                nextState.currentMinerals += 0.68;
+    public State gatherMinerals(State State) throws CloneNotSupportedException {
+        State nextState = (State) State.clone();
+        nextState.parent = State;
+        if (mineralSlots > 0) { //todo mine until we have the correct number of resources to accomplish the complete goal.
+            int mining = probes.getOrDefault(ProbeTask.MINERAL_MINING, 0);
+            if (mining <= 16) {
+                nextState.minerals += mining * 0.68;
             } else {
-                nextState.currentMinerals += 0.33;
+                nextState.minerals += (16 * 0.68) + (0.33 * (mining - 16));
             }
-            nextState.mineralPatches -= 1;
         } else {
             return null;
         }
         return nextState;
     }
 
-    private State gatherGas() throws CloneNotSupportedException {
+    public State gatherGas() throws CloneNotSupportedException {
         State nextState = (State) this.clone();
         nextState.parent = this;
         nextState.useProbe();
-        nextState.currentGas += 0.63;
+        nextState.gas += 0.63;
 
         return nextState;
     }
 
-    private void buildConstruct(Constructable c) throws CloneNotSupportedException {
+    public void buildConstruct(Constructable c) throws CloneNotSupportedException {
         State nextState = (State) this.clone();
         nextState.constructs.put(c, constructs.getOrDefault(c, 0) + 1);
-        if (c.isUnit())
+        if (c.isUnit()) {
 
+        }
     }
 
     private void useProbe() {
@@ -114,12 +121,12 @@ public class State {
 
     }
 
-    public int getCurrentMinerals() {
-        return currentMinerals;
+    public int getMinerals() {
+        return minerals;
     }
 
-    public int getCurrentGas() {
-        return currentGas;
+    public int getGas() {
+        return gas;
     }
 
     public HashMap<Constructable, Integer> getBuildings() {

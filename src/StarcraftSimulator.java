@@ -20,11 +20,8 @@ public class StarcraftSimulator {
         for (Goal goal : goals) {
             for (State state : currentStates) {
                 if (!state.getConstructs().entrySet().containsAll(goal.getUnitsRequired().entrySet())) {
-                    for (Constructable construct : Constructable.values()) {
-                        if (construct.dependenciesExist(state) && construct.resourcesAvailable(state)) {
+                    possibleNextStates.addAll(state.possibleNextStates(goal));
 
-                        }
-                    }
                 }
             }
         }

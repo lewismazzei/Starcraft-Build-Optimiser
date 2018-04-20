@@ -55,7 +55,7 @@ public enum Constructable {
     }
 
     public boolean resourcesAvailable(State state) {
-        return state.getCurrentMinerals() > mineralCost && state.getCurrentGas() > gasCost;
+        return state.getMinerals() > mineralCost && state.getGas() > gasCost;
     }
 
     public boolean isUnit() {

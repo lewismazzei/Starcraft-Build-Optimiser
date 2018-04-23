@@ -105,9 +105,14 @@ public class State {
     }
 
     public void gatherGas() {
-        parent = this;
-        useProbe();
-        gas += 0.63;
+        if (gasSlots > 0) {
+            int gathering = probes.getOrDefault(ProbeTask.GAS_COLLECTION, 0);
+            if (gathering <= 16) {
+                gas += gathering * 0.63;
+            } else {
+                gas += (16 * 0.68) + (0.33 * (gathering - 16));
+            }
+        }
     }
 
     public void buildConstruct(Constructable construct) {

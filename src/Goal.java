@@ -2,7 +2,7 @@ import java.util.*;
 
 public class Goal {
     private HashMap<Constructable, Integer> unitsRequired = new HashMap<>();
-    private HashSet<Constructable> buildingsRequired = new HashSet<>();
+    //private HashSet<Constructable> buildingsRequired = new HashSet<>();
     //private int mineralsRequired;
     //private int gasRequired;
 

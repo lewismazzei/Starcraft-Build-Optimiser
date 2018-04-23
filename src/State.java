@@ -26,13 +26,13 @@ public class State {
         this.probes = initialProbes();
     }
 
-    public State(State state) {
+    public State(State state, Goal goal) {
         this.time = state.getTime() + 1;
         this.gatherMinerals();
         this.gatherGas();
 
         if (!this.goalReached(goal)) {
-            this.child = new State(this);
+            this.child = new State(this, goal);
         }
     }
 
@@ -72,8 +72,8 @@ public class State {
         return probes;
     }
 
-    public ArrayList<State> possibleNextStates(Goal goal) {
-        ArrayList<State> possibleNextStates = new ArrayList<>();
+    public State nextState(Goal goal) {
+        State state = new State();
 
         List<Constructable> constructs = Arrays.asList(Constructable.values());
 
@@ -90,7 +90,7 @@ public class State {
         }
         gatherMinerals();
 
-        return possibleNextStates;
+        return state;
     }
 
     public void gatherMinerals() {

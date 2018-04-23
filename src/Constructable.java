@@ -6,8 +6,8 @@ import java.util.Optional;
 public enum Constructable {
     NEXUS(100, 400, 0, new Constructable[0], Optional.empty(), Optional.of(1)),
     PYLON(25, 100, 0, new Constructable[0], Optional.empty(), Optional.of(1)),
-    ASSIMILATOR(30, 75, 0, new Constructable[0], Optional.empty(), Optional.of(1)),
-    GATEWAY(65, 150, 0, new Constructable[]{PYLON}, Optional.empty(), Optional.of(1)),
+    ASSIMILATOR(30, 75, 0, new Constructable[0], Optional.empty(), Optional.of(2)),
+    GATEWAY(65, 150, 0, new Constructable[]{PYLON}, Optional.empty(), Optional.of(16)),
     CYBERNETICS_CORE(50, 150, 0, new Constructable[]{PYLON, GATEWAY}, Optional.empty(), Optional.of(1)),
     ROBOTICS_FACILITY(65, 200, 100, new Constructable[]{PYLON, CYBERNETICS_CORE}, Optional.empty(), Optional.of(1)),
     STARGATE(60, 150, 150, new Constructable[]{PYLON, CYBERNETICS_CORE}, Optional.empty(), Optional.of(1)),
@@ -94,13 +94,14 @@ public enum Constructable {
         if (dependenciesExist(state) && resourcesAvailable(state)) {
             if (isUnit()) {
                 if (!state.getActiveBuildings().contains(this.builtFrom.get()) && state.getUnits().get(this) < goal.getUnitsRequired().get(this)) {
-                    state.buildConstruct(this);
+                    return true;
                 }
             } else {
                 if (this.getCap().isPresent() && state.getBuildings().get(this) < this.getCap().get()) {
-                    state.buildConstruct(this);
+                    return true;
                 }
             }
         }
+        return false;
     }
 }

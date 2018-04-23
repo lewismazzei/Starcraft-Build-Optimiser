@@ -107,10 +107,10 @@ public class State {
     public void gatherGas() {
         if (gasSlots > 0) {
             int gathering = probes.getOrDefault(ProbeTask.GAS_COLLECTION, 0);
-            if (gathering <= 16) {
+            if (gathering <= 6) {
                 gas += gathering * 0.63;
             } else {
-                gas += (16 * 0.68) + (0.33 * (gathering - 16));
+                gas += (16 * 0.68) + (0.33 * (gathering - 4));
             }
         }
     }

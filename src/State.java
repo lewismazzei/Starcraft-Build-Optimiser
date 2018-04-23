@@ -112,24 +112,20 @@ public class State {
 
     public void buildConstruct(Constructable construct) {
         BuildTask bt = new BuildTask(construct);
-        if (bt.getConstructable().getBuiltFrom().isPresent()) {
+        if (bt.getConstructable().isUnit()) {
             activeBuildings.add(bt.getConstructable());
         }
         buildQueue.add(bt);
-        if (construct.isUnit()) {
-            activeBuildings.add(construct);
-            constructs.put(construct, constructs.getOrDefault(construct, 0) - 1);
-        }
         //TODO start timer, only put into map once timer has finished
         //nextState.constructs.put(c, constructs.getOrDefault(c, 0) + 1);
     }
 
     private void tickQueue() {
-        for (int i=0; i<buildQueue.size(); i++) {
+        for (int i = 0; i < buildQueue.size(); i++) {
             BuildTask bt = buildQueue.get(i);
             int ticksLeft = bt.tick();
             if (ticksLeft == 0) {
-                if (bt.getConstructable().getBuiltFrom().isPresent()) {
+                if (bt.getConstructable().isUnit()) {
                     activeBuildings.remove(bt.getConstructable());
                 }
                 constructs.put(bt.getConstructable(), constructs.getOrDefault(bt.getConstructable(), 0) + 1); //todo not sure if this should be construct or child
@@ -141,10 +137,6 @@ public class State {
     //private void useProbe() {
     //    this.units.put(Constructable.PROBE, this.units.get(Constructable.PROBE) - 1);
     //}
-
-    private void buildUnit(Constructable c) {
-
-    }
 
     public int getMinerals() {
         return minerals;

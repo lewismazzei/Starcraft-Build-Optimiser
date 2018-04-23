@@ -1,5 +1,4 @@
-import java.util.ArrayList;
-import java.util.HashMap;
+import java.util.*;
 
 public class State {
     private int time;
@@ -15,7 +14,7 @@ public class State {
     private HashMap<ProbeTask, Integer> probes;
     private ArrayList<Constructable> activeBuildings;
     private ArrayList<BuildTask> buildQueue = new ArrayList<>();
-    private State parent;
+    private State child;
 
     public State() {
         this.time = 0;
@@ -28,12 +27,17 @@ public class State {
     }
 
     public State(State state) {
-        this.parent = state;
+        this.time = state.getTime() + 1;
         this.gatherMinerals();
         this.gatherGas();
 
-        //todo add goal detection
-        new State(this);
+        if (!this.goalReached(goal)) {
+            this.child = new State(this);
+        }
+    }
+
+    public int getTime() {
+        return time;
     }
 
     //public State(int time, int minerals, int gas, HashMap<Constructable, Integer> constructs) {
@@ -71,25 +75,21 @@ public class State {
     public ArrayList<State> possibleNextStates(Goal goal) {
         ArrayList<State> possibleNextStates = new ArrayList<>();
 
-            try {
-                //IF next construct in stack can be built
-                //possibleNextStates.addAll(buildConstruct(NEXT CONSTRUCT TO BE BUILT));
-                //ELSE
-                for (Constructable construct : Constructable.values()) {
-                    State possibleNextState = new State(this);
-                    if (construct.canAndShouldBeBuilt(this, goal)) {
-                        possibleNextState = buildConstruct(construct);
-                    }
-                    possibleNextState = possibleNextState.gatherMinerals();
-                    possibleNextStates.add(possibleNextState);
-                }
+        List<Constructable> constructs = Arrays.asList(Constructable.values());
 
+        Random random = new Random();
 
-            } catch (CloneNotSupportedException e) {
-                e.printStackTrace();
-            }
+        int index = random.nextInt(constructs.size());
 
-        //}
+        Constructable randomConstruct = constructs.get(index);
+
+        if (randomConstruct.canAndShouldBeBuilt(this, goal)) {
+            buildConstruct(randomConstruct);
+        } else {
+            //DO YOUR DEPENDANCY THING?
+        }
+        gatherMinerals();
+
         return possibleNextStates;
     }
 
@@ -121,8 +121,6 @@ public class State {
             activeBuildings.add(bt.getConstructable());
         }
         buildQueue.add(bt);
-        //TODO start timer, only put into map once timer has finished
-        //nextState.constructs.put(c, constructs.getOrDefault(c, 0) + 1);
     }
 
     private void tickQueue() {
@@ -137,6 +135,15 @@ public class State {
                 buildQueue.remove(i);
             }
         }
+    }
+
+    private boolean goalReached(Goal goal) {
+        for (Map.Entry<Constructable, Integer> unit: this.getUnits().entrySet()) {
+            if (unit.getValue() < goal.getUnitsRequired().get(unit.getKey())) {
+                return false;
+            }
+        }
+        return true;
     }
 
     //private void useProbe() {

@@ -35,6 +35,7 @@ public enum Constructable {
     private final int gasCost;
     private final Constructable[] dependencies;
     private final Optional<Constructable> builtFrom;
+    private final Optional<Integer> cap;
 
     Constructable(int buildTime, int mineralCost, int gasCost, Constructable[] dependencies, Optional<Constructable> builtFrom, Optional<Integer> cap) {
         this.buildTime = buildTime;
@@ -42,6 +43,7 @@ public enum Constructable {
         this.gasCost = gasCost;
         this.dependencies = dependencies;
         this.builtFrom = builtFrom;
+        this.cap = cap;
     }
 
     public boolean dependenciesExist(State state) {
@@ -84,14 +86,18 @@ public enum Constructable {
         return builtFrom;
     }
 
+    public Optional<Integer> getCap() {
+        return cap;
+    }
+
     public boolean canAndShouldBeBuilt(State state, Goal goal) {
         if (dependenciesExist(state) && resourcesAvailable(state)) {
             if (isUnit()) {
-                if (!state.getActiveBuildings().contains(this.builtFrom) && state.getUnits().get(this) < goal.getUnitsRequired().get(this)) {
+                if (!state.getActiveBuildings().contains(this.builtFrom.get()) && state.getUnits().get(this) < goal.getUnitsRequired().get(this)) {
                     state.buildConstruct(this);
                 }
             } else {
-                if (state.getBuildings().get(this) < /*CAP*/) {
+                if (this.getCap().isPresent() && state.getBuildings().get(this) < this.getCap().get()) {
                     state.buildConstruct(this);
                 }
             }

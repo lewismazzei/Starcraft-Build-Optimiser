@@ -18,12 +18,7 @@ public class StarcraftSimulator {
         currentStates.add(root);
 
         for (Goal goal : goals) {
-            for (State state : currentStates) {
-                if (!state.getConstructs().entrySet().containsAll(goal.getUnitsRequired().entrySet())) {
-                    possibleNextStates.addAll(state.possibleNextStates(goal));
 
-                }
-            }
         }
      }
 }

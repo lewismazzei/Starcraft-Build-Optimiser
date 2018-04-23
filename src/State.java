@@ -15,8 +15,9 @@ public class State {
     private ArrayList<Constructable> activeBuildings;
     private ArrayList<BuildTask> buildQueue = new ArrayList<>();
     private State child;
+    private HashMap<Integer, BuildTask> significantTasks = new HashMap<>(); //todo insert build into hashmap time, task
 
-    public State() {
+    public State(Goal goal) {
         this.time = 0;
         this.minerals = 50;
         this.gas = 0;
@@ -24,17 +25,28 @@ public class State {
         this.gasSlots = 6;
         this.constructs = initialConstructs();
         this.probes = initialProbes();
+
+        this.child = new State(this, goal);
     }
 
     public State(State state, Goal goal) {
         this.time = state.getTime() + 1;
+        this.minerals = state.minerals;
+        this.gas = state.gas;
+        this.mineralSlots = state.mineralSlots;
+        this.gasSlots = state.gasSlots;
+        this.constructs = state.constructs;
+        this.probes = state.probes;
+        this.activeBuildings = state.activeBuildings;
+        this.buildQueue = state.buildQueue;
+        this.significantTasks = state.significantTasks;
         this.gatherMinerals();
         this.gatherGas();
 
         this.tickQueue();
 
         if (!this.goalReached(goal)) {
-            this.child = new State(this, goal);
+            this.child = nextState(goal);
         }
     }
 
@@ -75,7 +87,7 @@ public class State {
     }
 
     public State nextState(Goal goal) {
-        State state = new State();
+        State state = new State(this, goal);
 
         List<Constructable> constructs = Arrays.asList(Constructable.values());
 
@@ -162,5 +174,9 @@ public class State {
 
     public ArrayList<Constructable> getActiveBuildings() {
         return activeBuildings;
+    }
+
+    public State getChild() {
+        return child;
     }
 }

@@ -1,24 +1,41 @@
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
+import java.util.List;
 
 public class StarcraftSimulator {
 
     public static void main(String[] args) {
-        State root = new State();
+
 
         ArrayList<State> currentStates = new ArrayList<>();
         ArrayList<State> possibleNextStates = new ArrayList<>();
 
         ArrayList<Goal> goals = new ArrayList<>();
 
-        for (int i = 0; i < 5; i++) {
-            goals.add(new Goal(Goal.unitsRequired(i)));
+        Goal goal = new Goal(Goal.unitsRequired(Integer.parseInt(args[0])));
+
+        HashMap<Integer, State> games = new HashMap<>();
+
+        for (int i=0; i<100; i++) {
+            State game = new State(goal);
+            games.put(getGameLength(game), game);
         }
 
-        currentStates.add(root);
+        int shortest = Collections.min(games.keySet());
 
-        for (Goal goal : goals) {
+        State optimal = games.get(shortest);
 
+        //todo print output
+     }
+
+     public static int getGameLength(State s) {
+        int time = 0;
+        while (s.getChild() != null) {
+            time++;
+            s = s.getChild();
         }
+
+        return time;
      }
 }

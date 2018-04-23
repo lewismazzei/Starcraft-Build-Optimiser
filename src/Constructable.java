@@ -49,7 +49,7 @@ public enum Constructable {
     public boolean dependenciesExist(State state) {
         int matching = 0;
         for (Constructable c : dependencies) {
-            for (Map.Entry<Constructable, Integer> b : state.getBuildings().entrySet()) {
+            for (Map.Entry<Constructable, Integer> b : state.getConstructs().entrySet()) {
                 if (b.getKey() == c) {
                     matching++;
                 }
@@ -93,11 +93,11 @@ public enum Constructable {
     public boolean canAndShouldBeBuilt(State state, Goal goal) {
         if (dependenciesExist(state) && resourcesAvailable(state)) {
             if (isUnit()) {
-                if (!state.getActiveBuildings().contains(this.builtFrom.get()) && state.getUnits().get(this) < goal.getUnitsRequired().get(this)) {
+                if (!state.getActiveBuildings().contains(this.builtFrom.get()) && state.getConstructs().get(this) < goal.getUnitsRequired().get(this)) {
                     return true;
                 }
             } else {
-                if (this.getCap().isPresent() && state.getBuildings().get(this) < this.getCap().get()) {
+                if (this.getCap().isPresent() && state.getConstructs().get(this) < this.getCap().get()) {
                     return true;
                 }
             }

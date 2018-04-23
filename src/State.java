@@ -31,6 +31,8 @@ public class State {
         this.gatherMinerals();
         this.gatherGas();
 
+        this.tickQueue();
+
         if (!this.goalReached(goal)) {
             this.child = new State(this, goal);
         }
@@ -138,17 +140,13 @@ public class State {
     }
 
     private boolean goalReached(Goal goal) {
-        for (Map.Entry<Constructable, Integer> unit: this.getUnits().entrySet()) {
-            if (unit.getValue() < goal.getUnitsRequired().get(unit.getKey())) {
+        for (Map.Entry<Constructable, Integer> goalSet : goal.getUnitsRequired().entrySet()) {
+            if (goalSet.getValue() < constructs.get(goalSet.getKey())) {
                 return false;
             }
         }
         return true;
     }
-
-    //private void useProbe() {
-    //    this.units.put(Constructable.PROBE, this.units.get(Constructable.PROBE) - 1);
-    //}
 
     public int getMinerals() {
         return minerals;
@@ -156,14 +154,6 @@ public class State {
 
     public int getGas() {
         return gas;
-    }
-
-    public HashMap<Constructable, Integer> getBuildings() {
-        return buildings;
-    }
-
-    public HashMap<Constructable, Integer> getUnits() {
-        return units;
     }
 
     public HashMap<Constructable, Integer> getConstructs() {

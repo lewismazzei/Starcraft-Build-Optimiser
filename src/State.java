@@ -58,29 +58,6 @@ public class State {
         }
     }
 
-    public int getTime() {
-        return time;
-    }
-
-    //public State(int time, int minerals, int gas, HashMap<Constructable, Integer> constructs) {
-    //    this.time = time;
-    //    this.minerals = minerals;
-    //    this.gas = gas;
-    //    this.constructs = constructs;
-    //}
-
-    //private HashMap<Constructable, Integer> initialUnits() {
-    //    HashMap<Constructable, Integer> units = new HashMap<>();
-    //    units.put(Constructable.PROBE, 6);
-    //    return units;
-    //}
-    //
-    //private HashMap<Constructable, Integer> initialBuildings() {
-    //    HashMap<Constructable, Integer> buildings = new HashMap<>();
-    //    buildings.put(Constructable.NEXUS, 1);
-    //    return buildings;
-    //}
-
     private HashMap<Constructable, Integer> initialConstructs() {
         HashMap<Constructable, Integer> constructs = new HashMap<>();
         constructs.put(Constructable.PROBE, 6);
@@ -154,9 +131,9 @@ public class State {
 
     public void buildConstruct(Constructable construct) {
         BuildTask bt = new BuildTask(construct);
-        if (bt.getConstructable().isUnit()) {
-            availableBuldings.remove(bt.getConstructable());
-        }
+        //if (bt.getConstructable().isUnit()) {
+        //    availableBuldings.(bt.getConstructable());
+        //}
         buildQueue.add(bt);
         //significantActions.put(time, bt);
         events.add("Started building: " + bt.getConstructable());
@@ -166,20 +143,16 @@ public class State {
         //for every task in the build queue
         for (int i = 0; i < buildQueue.size(); i++) {
             BuildTask bt = buildQueue.get(i);
-            //tick
-            int ticksLeft = bt.tick();
             //if a construct has reached it's buildtime...
-            if (ticksLeft == 0) {
+            if (bt.tick() == 0) {
                 //...and the construct is a unit
                 if (bt.getConstructable().isUnit()) {
                     //add the building it is built from to the inactive buildings list
-                    availableBuldings.add(bt.getConstructable().getBuiltFrom().get());
+                    availableBuldings.remove(bt.getConstructable().getBuiltFrom().get());
                     //if unit is a probe
                     if (bt.getConstructable() == Constructable.PROBE) {
                         //assign a random task to the probe
-                        Random random = new Random();
-
-                        boolean miner = random.nextBoolean();
+                        boolean miner = new Random().nextBoolean();
                         //if the randomly selected task is not possible to carry out...
                         if (miner && mineralSlots < 1 || !miner && gasSlots < 1) {
                             //...toggle the task
@@ -255,5 +228,9 @@ public class State {
 
     public ArrayList<String> getEvents() {
         return events;
+    }
+
+    public int getTime() {
+        return time;
     }
 }

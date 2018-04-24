@@ -4,21 +4,22 @@ public class StarcraftSimulator {
 
     public static void main(String[] args) {
 
-
-        ArrayList<State> currentStates = new ArrayList<>();
-        ArrayList<State> possibleNextStates = new ArrayList<>();
-
-        ArrayList<Goal> goals = new ArrayList<>();
-
         Goal goal = new Goal(Goal.unitsRequired(Integer.parseInt(args[0])));
 
         HashMap<Integer, LinkedHashMap<Integer, BuildTask>> games = new HashMap<>();
 
-        for (int i=0; i<2; i++) {
+        for (int i=0; i<1; i++) {
             State game = new State(goal);
 
-            games.put(getGameLength(game), game.getSignificantTasks());
-            game = null;
+            games.put(getGameLength(game), game.getSignificantActions());
+
+            //for (Map.Entry<Integer, BuildTask> entry : game.getSignificantActions().entrySet()) {
+            //    System.out.println(entry.getValue().getConstructable());
+            //}
+
+            for (String event : game.getEvents()) {
+                System.out.println(event);
+            }
         }
 
         int shortest = Collections.min(games.keySet());

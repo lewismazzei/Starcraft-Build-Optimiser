@@ -15,10 +15,11 @@ public class State {
     private Set<Constructable> required = new HashSet<>();
     private HashMap<Constructable, Integer> constructs;
     private HashMap<ProbeTask, Integer> probes;
-    private ArrayList<Constructable> activeBuildings = new ArrayList<>();
+    private ArrayList<Constructable> availableBuldings = new ArrayList<>();
     private ArrayList<BuildTask> buildQueue = new ArrayList<>();
     private State child;
-    private LinkedHashMap<Integer, BuildTask> significantTasks = new LinkedHashMap<>(); //todo insert build into hashmap time, task
+    private LinkedHashMap<Integer, BuildTask> significantActions = new LinkedHashMap<>(); //todo insert build into hashmap time, task
+    private ArrayList<String> events = new ArrayList<>();
 
     public State(Goal goal) {
         this.time = 0;
@@ -28,6 +29,7 @@ public class State {
         this.gasSlots = 6;
         this.constructs = initialConstructs();
         this.probes = initialProbes();
+        this.availableBuldings.add(Constructable.NEXUS);
 
         this.child = new State(this, goal);
     }
@@ -40,16 +42,19 @@ public class State {
         this.gasSlots = state.gasSlots;
         this.constructs = state.constructs;
         this.probes = state.probes;
-        this.activeBuildings = state.activeBuildings;
+        this.availableBuldings = state.availableBuldings;
         this.buildQueue = state.buildQueue;
-        this.significantTasks = state.significantTasks;
-        this.gatherMinerals();
+        this.significantActions = state.significantActions;
+        this.events = state.events;
+        this.mineMinerals();
         this.gatherGas();
 
         this.tickQueue();
 
         if (!this.goalReached(goal) && this.time < MAX_TIME) {
             this.child = nextState(goal);
+        } else {
+            this.child = null;
         }
     }
 
@@ -94,27 +99,38 @@ public class State {
     }
 
     public State nextState(Goal goal) {
-        List<Constructable> constructs = goal.getBuildingsRequired();
 
-        for (Map.Entry<Constructable, Integer> unit : goal.getUnitsRequired().entrySet()) {
-            constructs.add(unit.getKey());
+        ArrayList<Constructable> constructsThatCanAndShouldBeBuilt = new ArrayList<>();
+
+        for (Constructable construct : Constructable.values()) {
+            if (construct.canAndShouldBeBuilt(this, goal)) {
+                constructsThatCanAndShouldBeBuilt.add(construct);
+            }
         }
 
-        Random random = new Random();
+        if (constructsThatCanAndShouldBeBuilt.size() > 0) {
+            Random random = new Random();
 
-            int index = random.nextInt(constructs.size() - 1);
+            int index;
 
-            Constructable randomConstruct = constructs.get(index);
-            if (randomConstruct.canAndShouldBeBuilt(this, goal)) {
-                buildConstruct(randomConstruct);
+            if (constructsThatCanAndShouldBeBuilt.size() == 1) {
+                index = 0;
+            } else {
+                index = random.nextInt(constructsThatCanAndShouldBeBuilt.size() - 1);
             }
 
-        State state = new State(this, goal);
 
-        return state;
+            Constructable randomConstructThatCanAndShouldBeBuilt = constructsThatCanAndShouldBeBuilt.get(index);
+
+            buildConstruct(randomConstructThatCanAndShouldBeBuilt);
+        } else {
+            events.add("Waited");
+        }
+
+        return new State(this, goal);
     }
 
-    public void gatherMinerals() {
+    public void mineMinerals() {
         if (mineralSlots > 0) {
             int mining = probes.getOrDefault(ProbeTask.MINERAL_MINING, 0);
             if (mining <= 16) {
@@ -127,7 +143,7 @@ public class State {
 
     public void gatherGas() {
         if (gasSlots > 0) {
-            int gathering = probes.getOrDefault(ProbeTask.GAS_COLLECTION, 0);
+            int gathering = probes.getOrDefault(ProbeTask.GAS_GATHERING, 0);
             if (gathering <= 6) {
                 gas += gathering * 0.63;
             } else {
@@ -139,21 +155,58 @@ public class State {
     public void buildConstruct(Constructable construct) {
         BuildTask bt = new BuildTask(construct);
         if (bt.getConstructable().isUnit()) {
-            activeBuildings.add(bt.getConstructable());
+            availableBuldings.remove(bt.getConstructable());
         }
         buildQueue.add(bt);
-        significantTasks.put(time, bt);
+        //significantActions.put(time, bt);
+        events.add("Started building: " + bt.getConstructable());
     }
 
     private void tickQueue() {
+        //for every task in the build queue
         for (int i = 0; i < buildQueue.size(); i++) {
             BuildTask bt = buildQueue.get(i);
+            //tick
             int ticksLeft = bt.tick();
+            //if a construct has reached it's buildtime...
             if (ticksLeft == 0) {
+                //...and the construct is a unit
                 if (bt.getConstructable().isUnit()) {
-                    activeBuildings.remove(bt.getConstructable());
+                    //add the building it is built from to the inactive buildings list
+                    availableBuldings.add(bt.getConstructable().getBuiltFrom().get());
+                    //if unit is a probe
+                    if (bt.getConstructable() == Constructable.PROBE) {
+                        //assign a random task to the probe
+                        Random random = new Random();
+
+                        boolean miner = random.nextBoolean();
+                        //if the randomly selected task is not possible to carry out...
+                        if (miner && mineralSlots < 1 || !miner && gasSlots < 1) {
+                            //...toggle the task
+                            miner = !miner;
+                            //if it is assigned to mine minerals
+                            if (miner) {
+                                //then update the probes map to reflect this
+                                probes.put(ProbeTask.MINERAL_MINING, probes.get(ProbeTask.MINERAL_MINING) + 1);
+                                //and decrement numner of mineralSlots
+                                mineralSlots -= 1;
+                            //if it is assigned to gather gas
+                            } else {
+                                //then update the probes map to reflect this
+                                probes.put(ProbeTask.GAS_GATHERING, probes.getOrDefault(ProbeTask.GAS_GATHERING, 0) + 1);
+                                //and decrement number of gas slots
+                                gasSlots -= 1;
+                            }
+
+                        }
+                    }
                 }
-                constructs.put(bt.getConstructable(), constructs.getOrDefault(bt.getConstructable(), 0) + 1); //todo not sure if this should be construct or child
+                //regardless of whether the construct is a unit or building, update the constructs map to reflect the new construct
+                constructs.put(bt.getConstructable(), constructs.getOrDefault(bt.getConstructable(), 0) + 1);
+
+                events.add("Finished building: " + bt.getConstructable());
+
+                //and remove it's build task from the queue
                 buildQueue.remove(i);
             }
         }
@@ -180,15 +233,27 @@ public class State {
         return constructs;
     }
 
-    public ArrayList<Constructable> getActiveBuildings() {
-        return activeBuildings;
+    public ArrayList<Constructable> getAvailableBuldings() {
+        return availableBuldings;
     }
 
     public State getChild() {
         return child;
     }
 
-    public LinkedHashMap<Integer, BuildTask> getSignificantTasks() {
-        return significantTasks;
+    public LinkedHashMap<Integer, BuildTask> getSignificantActions() {
+        return significantActions;
+    }
+
+    public int getMineralSlots() {
+        return mineralSlots;
+    }
+
+    public int getGasSlots() {
+        return gasSlots;
+    }
+
+    public ArrayList<String> getEvents() {
+        return events;
     }
 }

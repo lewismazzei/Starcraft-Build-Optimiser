@@ -89,20 +89,54 @@ public enum Constructable {
     }
 
     public boolean canAndShouldBeBuilt(State state, Goal goal) {
+        //if the dependencies and resources exist...
         if (dependenciesExist(state) && resourcesAvailable(state)) {
+            //...and the construct is a unit...
             if (isUnit()) {
-                if (!state.getActiveBuildings().contains(this.builtFrom.get())
-                        && state.getConstructs().getOrDefault(this, 0) + state.getBuildQueue().stream().filter(x -> x.getConstructable() == this).count() < goal.getUnitsRequired().getOrDefault(this, 0)) {
-                    return true;
+                //...and the building required to build it is inactive...
+                if (state.getAvailableBuldings().contains(this.builtFrom.get())) {
+                    //(special case if the unit is a probe as there is a cap for numbers of probes not a required amount)
+                    if (this == Constructable.PROBE) {
+                        //if there is any kind of slot available for a probe (if there only gas slots left then there needs to be the necessary assimilators...
+                        if (state.getMineralSlots() > 0 ||
+                                state.getGasSlots() >= 1 && state.getGasSlots() <= 3 && state.getConstructs().getOrDefault(Constructable.ASSIMILATOR, 0) >= 2 ||
+                                state.getGasSlots() >= 4 && state.getGasSlots() <= 6 && state.getConstructs().getOrDefault(Constructable.ASSIMILATOR, 0) >= 1) {
+                            //then it can and should be built
+                            return true;
+                        }
+                    }
+                //(for any other unit)
+                } else {
+                    //...and the number of that units already built plus the ones currently being built is less than the required amount...
+                    int beingBuilt = 0;
+                    for (BuildTask bt : state.getBuildQueue()) {
+                        if (bt.getConstructable() == this) {
+                            beingBuilt += 1;
+                        }
+                    }
+                    if (state.getConstructs().getOrDefault(this, 0) + beingBuilt < goal.getUnitsRequired().getOrDefault(this, 0)) {
+                        //...then it can and should be built
+                        return true;
+                        //LAMBDA: state.getBuildQueue().stream().filter(x -> x.getConstructable() == this).count()
+                    }
                 }
+            //if the construct is a building...
             } else {
-                if (this.getCap().isPresent()
-                        && state.getConstructs().getOrDefault(this, 0) < this.getCap().get()
-                        && state.getBuildQueue().stream().filter(x -> x.getConstructable() == this).count() < this.getCap().get()) {
+                //...and and the number of that buildings already built plus the ones currently being built is less than the cap
+                int beingBuilt = 0;
+                for (BuildTask bt : state.getBuildQueue()) {
+                    if (bt.getConstructable() == this) {
+                        beingBuilt += 1;
+                    }
+                }
+                if (state.getConstructs().getOrDefault(this, 0) + beingBuilt < this.getCap().get()) {
+                    //...then it can and should be built
                     return true;
+                    //LAMBDA: state.getBuildQueue().stream().filter(x -> x.getConstructable() == this).count()
                 }
             }
         }
+        //if true is never never returned then for some reason the construct can't or shouldn't be be built
         return false;
     }
 }

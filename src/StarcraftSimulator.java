@@ -8,7 +8,7 @@ public class StarcraftSimulator {
 
         HashMap<Integer, LinkedHashMap<Integer, BuildTask>> games = new HashMap<>();
 
-        for (int i=0; i<1; i++) {
+        for (int i=0; i<100000; i++) {
             State game = new State(goal);
 
             games.put(getGameLength(game), game.getSignificantActions());
@@ -17,27 +17,28 @@ public class StarcraftSimulator {
             //    System.out.println(entry.getValue().getConstructable());
             //}
 
-            for (String event : game.getEvents()) {
-                System.out.println(event);
-            }
+            //for (String event : game.getEvents()) {
+            //    System.out.println(event);
+            //}
+
         }
 
         int shortest = Collections.min(games.keySet());
 
         HashMap<Integer, BuildTask> optimal = games.get(shortest);
 
-        System.out.println(shortest);
-
-        //todo print output
+        for (Map.Entry<Integer, BuildTask> action : optimal.entrySet()) {
+            System.out.println(action.getValue().getConstructable() + " @ " + action.getKey() + " ticks");
+        }
      }
 
-     public static State getLast(State s) {
-         while (s.getChild() != null) {
-             s = s.getChild();
-         }
-
-         return s;
-     }
+     //public static State getLast(State s) {
+     //    while (s.getChild() != null) {
+     //        s = s.getChild();
+     //    }
+     //
+     //    return s;
+     //}
 
      public static int getGameLength(State s) {
         int time = 0;

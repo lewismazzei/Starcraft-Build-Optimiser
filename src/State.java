@@ -1,18 +1,13 @@
 import java.util.*;
 
 public class State {
-    private static final int MAX_TIME = 1911;
+    private static final int MAX_TIME = 1900;
 
     private int time;
     private int minerals;
     private int gas;
-    //private int accumulatedMinerals;
-    //private int accumulatedGas;
     private int mineralSlots;
     private int gasSlots;
-    //private HashMap<Constructable, Integer> units;
-    //private HashMap<Constructable, Integer> buildings;
-    private Set<Constructable> required = new HashSet<>();
     private HashMap<Constructable, Integer> constructs;
     private HashMap<ProbeTask, Integer> probes;
     private ArrayList<Constructable> availableBuldings = new ArrayList<>();
@@ -101,31 +96,27 @@ public class State {
 
             buildConstruct(randomConstructThatCanAndShouldBeBuilt);
         } else {
-            events.add("Waited");
+            //events.add("Waited");
         }
 
         return new State(this, goal);
     }
 
     public void mineMinerals() {
-        if (mineralSlots > 0) {
-            int mining = probes.getOrDefault(ProbeTask.MINERAL_MINING, 0);
-            if (mining <= 16) {
-                minerals += mining * 0.68;
-            } else {
-                minerals += (16 * 0.68) + (0.33 * (mining - 16));
-            }
+        int mining = probes.getOrDefault(ProbeTask.MINERAL_MINING, 0);
+        if (mining <= 16) {
+            minerals += mining * 0.68;
+        } else {
+            minerals += (16 * 0.68) + (0.33 * (mining - 16));
         }
     }
 
     public void gatherGas() {
-        if (gasSlots > 0) {
-            int gathering = probes.getOrDefault(ProbeTask.GAS_GATHERING, 0);
-            if (gathering <= 6) {
-                gas += gathering * 0.63;
-            } else {
-                gas += (16 * 0.68) + (0.33 * (gathering - 4));
-            }
+        int gathering = probes.getOrDefault(ProbeTask.GAS_GATHERING, 0);
+        if (gathering <= 6) {
+            gas += gathering * 0.63;
+        } else {
+            gas += (16 * 0.68) + (0.33 * (gathering - 4));
         }
     }
 
@@ -134,9 +125,11 @@ public class State {
         //if (bt.getConstructable().isUnit()) {
         //    availableBuldings.(bt.getConstructable());
         //}
+        minerals -= construct.getMineralCost();
+        gas -= construct.getGasCost();
         buildQueue.add(bt);
-        //significantActions.put(time, bt);
-        events.add("Started building: " + bt.getConstructable());
+        significantActions.put(time, bt);
+        events.add("Started building: " + bt.getConstructable() + " @ " + time + " ticks");
     }
 
     private void tickQueue() {
@@ -157,27 +150,26 @@ public class State {
                         if (miner && mineralSlots < 1 || !miner && gasSlots < 1) {
                             //...toggle the task
                             miner = !miner;
-                            //if it is assigned to mine minerals
-                            if (miner) {
-                                //then update the probes map to reflect this
-                                probes.put(ProbeTask.MINERAL_MINING, probes.get(ProbeTask.MINERAL_MINING) + 1);
-                                //and decrement numner of mineralSlots
-                                mineralSlots -= 1;
-                            //if it is assigned to gather gas
-                            } else {
-                                //then update the probes map to reflect this
-                                probes.put(ProbeTask.GAS_GATHERING, probes.getOrDefault(ProbeTask.GAS_GATHERING, 0) + 1);
-                                //and decrement number of gas slots
-                                gasSlots -= 1;
-                            }
-
+                        }
+                        //if it is assigned to mine minerals
+                        if (miner) {
+                            //then update the probes map to reflect this
+                            probes.put(ProbeTask.MINERAL_MINING, probes.get(ProbeTask.MINERAL_MINING) + 1);
+                            //and decrement numner of mineralSlots
+                            mineralSlots -= 1;
+                        //if it is assigned to gather gas
+                        } else {
+                            //then update the probes map to reflect this
+                            probes.put(ProbeTask.GAS_GATHERING, probes.getOrDefault(ProbeTask.GAS_GATHERING, 0) + 1);
+                            //and decrement number of gas slots
+                            gasSlots -= 1;
                         }
                     }
                 }
                 //regardless of whether the construct is a unit or building, update the constructs map to reflect the new construct
                 constructs.put(bt.getConstructable(), constructs.getOrDefault(bt.getConstructable(), 0) + 1);
 
-                events.add("Finished building: " + bt.getConstructable());
+                events.add("Finished building: " + bt.getConstructable() + " @ " + time + " ticks");
 
                 //and remove it's build task from the queue
                 buildQueue.remove(i);

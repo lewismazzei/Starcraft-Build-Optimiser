@@ -1,33 +1,15 @@
 import java.util.*;
 
 public class Goal {
+    //ATTRIBUTE (map to store how many of each unit is required)
     private HashMap<Constructable, Integer> unitsRequired = new HashMap<>();
-    //private ArrayList<Constructable> buildingsRequired = new ArrayList<>();
-    //private int mineralsRequired;
-    //private int gasRequired;
 
+    //CONSTRUCTOR
     public Goal(HashMap<Constructable, Integer> unitsRequired) {
         this.unitsRequired = unitsRequired;
-        //this.mineralsRequired = calcMineralsRequired(unitsRequired);
-        //this.gasRequired = calcGasRequired(unitsRequired);
     }
 
-    //private int calcMineralsRequired() {
-    //    int mineralCount = 0;
-    //    for (Map.Entry<Constructable, Integer> entry : unitsRequired.entrySet()) {
-    //        mineralCount += entry.getKey().getMineralCost() * entry.getValue();
-    //    }
-    //    return mineralCount;
-    //}
-    //
-    //private int calcGasRequired() {
-    //    int mineralCount = 0;
-    //    for (Map.Entry<Constructable, Integer> entry : unitsRequired.entrySet()) {
-    //        mineralCount += entry.getKey().getGasCost() * entry.getValue();
-    //    }
-    //    return mineralCount;
-    //}
-
+    //GOALS
     public static HashMap<Constructable, Integer> unitsRequired(int goal) {
         HashMap<Constructable, Integer> unitsRequired = new HashMap<>();
 
@@ -72,37 +54,8 @@ public class Goal {
         return unitsRequired;
     }
 
-    public ArrayList<Constructable> getBuildingsRequired() {
-        //HashSet<Constructable> dependancies = new HashSet<>();
-        //for (int i = 0; i < constructs.size(); i++) {
-        //    if (constructs.size() != 0) {
-        //        Constructable construct = Arrays.asList(constructs).get(i);
-        //        dependancies.add(construct));
-        //
-        //    }
-        //}
-        ArrayList<Constructable> buildingsRequired = new ArrayList<>();
-
-        for (Constructable construct : unitsRequired.keySet()) {
-            buildingsRequired.addAll(Arrays.asList(construct.getDependencies()));
-            for (Constructable c : construct.getDependencies()) {
-                buildingsRequired.addAll(Arrays.asList(c.getDependencies()));
-            }
-        }
-        return buildingsRequired;
-    }
-
-
-
+    //GETTER
     public HashMap<Constructable, Integer> getUnitsRequired() {
         return unitsRequired;
     }
-
-    //public int getMineralsRequired() {
-    //    return mineralsRequired;
-    //}
-    //
-    //public int getGasRequired() {
-    //    return gasRequired;
-    //}
 }

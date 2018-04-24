@@ -1,6 +1,8 @@
 import java.util.*;
 
 public class State {
+    private static final int MAX_TIME = 1911;
+
     private int time;
     private int minerals;
     private int gas;
@@ -10,12 +12,13 @@ public class State {
     private int gasSlots;
     //private HashMap<Constructable, Integer> units;
     //private HashMap<Constructable, Integer> buildings;
+    private Set<Constructable> required = new HashSet<>();
     private HashMap<Constructable, Integer> constructs;
     private HashMap<ProbeTask, Integer> probes;
-    private ArrayList<Constructable> activeBuildings;
+    private ArrayList<Constructable> activeBuildings = new ArrayList<>();
     private ArrayList<BuildTask> buildQueue = new ArrayList<>();
     private State child;
-    private HashMap<Integer, BuildTask> significantTasks = new HashMap<>(); //todo insert build into hashmap time, task
+    private LinkedHashMap<Integer, BuildTask> significantTasks = new LinkedHashMap<>(); //todo insert build into hashmap time, task
 
     public State(Goal goal) {
         this.time = 0;
@@ -45,7 +48,7 @@ public class State {
 
         this.tickQueue();
 
-        if (!this.goalReached(goal)) {
+        if (!this.goalReached(goal) && this.time < MAX_TIME) {
             this.child = nextState(goal);
         }
     }
@@ -86,23 +89,27 @@ public class State {
         return probes;
     }
 
-    public State nextState(Goal goal) {
-        State state = new State(this, goal);
+    public ArrayList<BuildTask> getBuildQueue() {
+        return buildQueue;
+    }
 
-        List<Constructable> constructs = Arrays.asList(Constructable.values());
+    public State nextState(Goal goal) {
+        List<Constructable> constructs = goal.getBuildingsRequired();
+
+        for (Map.Entry<Constructable, Integer> unit : goal.getUnitsRequired().entrySet()) {
+            constructs.add(unit.getKey());
+        }
 
         Random random = new Random();
 
-        int index = random.nextInt(constructs.size());
+            int index = random.nextInt(constructs.size() - 1);
 
-        Constructable randomConstruct = constructs.get(index);
+            Constructable randomConstruct = constructs.get(index);
+            if (randomConstruct.canAndShouldBeBuilt(this, goal)) {
+                buildConstruct(randomConstruct);
+            }
 
-        if (randomConstruct.canAndShouldBeBuilt(this, goal)) {
-            buildConstruct(randomConstruct);
-        } else {
-            //DO YOUR DEPENDANCY THING?
-        }
-        gatherMinerals();
+        State state = new State(this, goal);
 
         return state;
     }
@@ -135,6 +142,7 @@ public class State {
             activeBuildings.add(bt.getConstructable());
         }
         buildQueue.add(bt);
+        significantTasks.put(time, bt);
     }
 
     private void tickQueue() {
@@ -153,7 +161,7 @@ public class State {
 
     private boolean goalReached(Goal goal) {
         for (Map.Entry<Constructable, Integer> goalSet : goal.getUnitsRequired().entrySet()) {
-            if (goalSet.getValue() < constructs.get(goalSet.getKey())) {
+            if (goalSet.getValue() > constructs.getOrDefault(goalSet.getKey(), 0)) {
                 return false;
             }
         }
@@ -178,5 +186,9 @@ public class State {
 
     public State getChild() {
         return child;
+    }
+
+    public LinkedHashMap<Integer, BuildTask> getSignificantTasks() {
+        return significantTasks;
     }
 }

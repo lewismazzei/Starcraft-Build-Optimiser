@@ -1,7 +1,4 @@
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.List;
+import java.util.*;
 
 public class StarcraftSimulator {
 
@@ -15,18 +12,30 @@ public class StarcraftSimulator {
 
         Goal goal = new Goal(Goal.unitsRequired(Integer.parseInt(args[0])));
 
-        HashMap<Integer, State> games = new HashMap<>();
+        HashMap<Integer, LinkedHashMap<Integer, BuildTask>> games = new HashMap<>();
 
-        for (int i=0; i<100; i++) {
+        for (int i=0; i<2; i++) {
             State game = new State(goal);
-            games.put(getGameLength(game), game);
+
+            games.put(getGameLength(game), game.getSignificantTasks());
+            game = null;
         }
 
         int shortest = Collections.min(games.keySet());
 
-        State optimal = games.get(shortest);
+        HashMap<Integer, BuildTask> optimal = games.get(shortest);
+
+        System.out.println(shortest);
 
         //todo print output
+     }
+
+     public static State getLast(State s) {
+         while (s.getChild() != null) {
+             s = s.getChild();
+         }
+
+         return s;
      }
 
      public static int getGameLength(State s) {

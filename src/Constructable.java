@@ -1,5 +1,3 @@
-import com.sun.source.tree.IfTree;
-
 import java.util.Map;
 import java.util.Optional;
 
@@ -7,7 +5,7 @@ public enum Constructable {
     NEXUS(100, 400, 0, new Constructable[0], Optional.empty(), Optional.of(1)),
     PYLON(25, 100, 0, new Constructable[0], Optional.empty(), Optional.of(1)),
     ASSIMILATOR(30, 75, 0, new Constructable[0], Optional.empty(), Optional.of(2)),
-    GATEWAY(65, 150, 0, new Constructable[]{PYLON}, Optional.empty(), Optional.of(16)),
+    GATEWAY(65, 150, 0, new Constructable[]{PYLON}, Optional.empty(), Optional.of(2)),
     CYBERNETICS_CORE(50, 150, 0, new Constructable[]{PYLON, GATEWAY}, Optional.empty(), Optional.of(1)),
     ROBOTICS_FACILITY(65, 200, 100, new Constructable[]{PYLON, CYBERNETICS_CORE}, Optional.empty(), Optional.of(1)),
     STARGATE(60, 150, 150, new Constructable[]{PYLON, CYBERNETICS_CORE}, Optional.empty(), Optional.of(1)),
@@ -59,7 +57,7 @@ public enum Constructable {
     }
 
     public boolean resourcesAvailable(State state) {
-        return state.getMinerals() > mineralCost && state.getGas() > gasCost;
+        return state.getMinerals() >= mineralCost && state.getGas() >= gasCost;
     }
 
     public boolean isUnit() {
@@ -93,11 +91,14 @@ public enum Constructable {
     public boolean canAndShouldBeBuilt(State state, Goal goal) {
         if (dependenciesExist(state) && resourcesAvailable(state)) {
             if (isUnit()) {
-                if (!state.getActiveBuildings().contains(this.builtFrom.get()) && state.getConstructs().get(this) < goal.getUnitsRequired().get(this)) {
+                if (!state.getActiveBuildings().contains(this.builtFrom.get())
+                        && state.getConstructs().getOrDefault(this, 0) + state.getBuildQueue().stream().filter(x -> x.getConstructable() == this).count() < goal.getUnitsRequired().getOrDefault(this, 0)) {
                     return true;
                 }
             } else {
-                if (this.getCap().isPresent() && state.getConstructs().get(this) < this.getCap().get()) {
+                if (this.getCap().isPresent()
+                        && state.getConstructs().getOrDefault(this, 0) < this.getCap().get()
+                        && state.getBuildQueue().stream().filter(x -> x.getConstructable() == this).count() < this.getCap().get()) {
                     return true;
                 }
             }
